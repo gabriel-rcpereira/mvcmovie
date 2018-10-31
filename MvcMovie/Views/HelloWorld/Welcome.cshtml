@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Welcome";
+}
+
+<ul>
+@{ 
+    var numTimes = Convert.ToInt32(ViewData["NumTimes"]);
+    for (int i = 0; i < numTimes; i++)
+    {
+        <li>
+            @i - @ViewData["Message"] 
+        </li>
+    }
+}
+</ul>
