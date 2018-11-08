@@ -2773,6 +2773,9 @@
           "lib/netstandard1.3/Newtonsoft.Json.Bson.dll": {}
         }
       },
+      "NuGet.CommandLine/4.7.1": {
+        "type": "package"
+      },
       "NuGet.Frameworks/4.7.0": {
         "type": "package",
         "dependencies": {
@@ -7505,6 +7508,17 @@
         "newtonsoft.json.bson.nuspec"
       ]
     },
+    "NuGet.CommandLine/4.7.1": {
+      "sha512": "p99x3HJ0txeAwtQYe9zqFQJDEF06OWxqgJdX8mgSQ1uM4UkXvVFLfTEtsjC9fJefGObdGhMhKAPVZ4Xc/N9hJg==",
+      "type": "package",
+      "path": "nuget.commandline/4.7.1",
+      "files": [
+        ".signature.p7s",
+        "nuget.commandline.4.7.1.nupkg.sha512",
+        "nuget.commandline.nuspec",
+        "tools/NuGet.exe"
+      ]
+    },
     "NuGet.Frameworks/4.7.0": {
       "sha512": "/VaEPsEgj3p5YPLLxbYc6rB8gYIPf+8wCWOAlAe3l/SP0DXcefZ58uJer1ToBKIpwbPN5LkgTXtvilze5UJoYQ==",
       "type": "package",
@@ -12214,7 +12228,8 @@
     ".NETCoreApp,Version=v2.1": [
       "Microsoft.AspNetCore.App >= 2.1.1",
       "Microsoft.NETCore.App >= 2.1.0",
-      "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 2.1.5"
+      "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 2.1.5",
+      "NuGet.CommandLine >= 4.7.1"
     ]
   },
   "packageFolders": {
@@ -12272,6 +12287,12 @@
           "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
             "target": "Package",
             "version": "[2.1.5, )"
+          },
+          "NuGet.CommandLine": {
+            "include": "Runtime, Build, Native, ContentFiles, Analyzers",
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[4.7.1, )"
           }
         },
         "imports": [
