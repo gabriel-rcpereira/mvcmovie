@@ -13,5 +13,6 @@ namespace MvcMovie.Models
         [Required]
         [MinLength(3)]
         public string Name { get; set; }
+        public IList<Movie> Movies { get; set; }
     }
 }

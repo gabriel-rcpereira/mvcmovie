@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MvcMovie.Models
 {
-    public class MovieGenreViewModel
+    public class MovieIndexViewModel
     {
         public List<Movie> Movies;
         public SelectList Genres;

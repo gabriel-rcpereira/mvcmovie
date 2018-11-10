@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -24,9 +25,9 @@ namespace MvcMovie.Controllers
         public async Task<IActionResult> Index(string movieGenre, string searchString)
         {
             // Use LINQ to get list of genres.
-            IQueryable<string> genreQuery = from m in _context.Movies
-                                            orderby m.Genre
-                                            select m.Genre;
+            IQueryable<string> genreQuery = from m in _context.Genres
+                                            orderby m.Name
+                                            select m.Name;
 
             var movies = from m in _context.Movies
                          select m;
@@ -38,15 +39,19 @@ namespace MvcMovie.Controllers
 
             if (!String.IsNullOrEmpty(movieGenre))
             {
-                movies = movies.Where(x => x.Genre == movieGenre);
+                movies = movies.Where(x => x.Genre.Name == movieGenre);
             }
 
-            var movieGenreVM = new MovieGenreViewModel();
-            movieGenreVM.Genres = new SelectList(await genreQuery.Distinct().ToListAsync());
-            movieGenreVM.Movies = await movies.ToListAsync();
-            movieGenreVM.SearchString = searchString;
+            var movieIndexVM = new MovieIndexViewModel
+            {
+                Genres = new SelectList(await genreQuery.Distinct().ToListAsync()),
+                Movies = await movies
+                    .Include(m => m.Genre)
+                    .ToListAsync(),
+                SearchString = searchString
+            };
 
-            return View(movieGenreVM);
+            return View(movieIndexVM);
         }
 
         // GET: Movies/Details/5
@@ -58,6 +63,7 @@ namespace MvcMovie.Controllers
             }
 
             var movie = await _context.Movies
+                .Include(m => m.Genre)
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (movie == null)
             {
@@ -70,7 +76,13 @@ namespace MvcMovie.Controllers
         // GET: Movies/Create
         public IActionResult Create()
         {
-            return View();
+            var movieGenreView = new MovieEditViewModel
+            {
+                Genres = _context.Genres.ToList().Select(g => new SelectListItem(g.Name, g.ID.ToString())),
+                Movie = new Movie()
+            };
+
+            return View(movieGenreView);
         }
 
         // POST: Movies/Create
@@ -78,31 +90,46 @@ namespace MvcMovie.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
+        public async Task<IActionResult> Create(MovieEditViewModel movieEditViewModel)
         {
             if (ModelState.IsValid)
             {
+                var movie = movieEditViewModel.Movie;
+                var genre = await _context.Genres.FindAsync(movieEditViewModel.GenreIdSelected);
+
+                movie.Genre = genre;
                 _context.Add(movie);
                 await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(movie);
+            return RedirectToAction(nameof(Create));
         }
 
         // GET: Movies/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var movie = await _context.Movies.FindAsync(id);
+            var movie = await _context.Movies
+                .Include(m => m.Genre)
+                .FirstAsync(m => m.ID == id.Value);
+
             if (movie == null)
             {
                 return NotFound();
             }
-            return View(movie);
+
+            var movieGenreView = new MovieEditViewModel
+            {
+                Genres = _context.Genres.ToList().Select(g => new SelectListItem(g.Name, g.ID.ToString())),
+                Movie = movie
+            };
+
+            return View(movieGenreView);
         }
 
         // POST: Movies/Edit/5
@@ -110,17 +137,20 @@ namespace MvcMovie.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
+        public async Task<IActionResult> Edit(int id, MovieEditViewModel movieEditViewModel)
         {
-            if (id != movie.ID)
+            if (id != movieEditViewModel.Movie.ID)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
+                var movie = movieEditViewModel.Movie;
                 try
                 {
+                    movie.Genre = await _context.Genres.FindAsync(movieEditViewModel.GenreIdSelected);
+
                     _context.Update(movie);
                     await _context.SaveChangesAsync();
                 }
@@ -137,7 +167,7 @@ namespace MvcMovie.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(movie);
+            return View(movieEditViewModel);
         }
 
         // GET: Movies/Delete/5
@@ -149,6 +179,7 @@ namespace MvcMovie.Controllers
             }
 
             var movie = await _context.Movies
+                .Include(m => m.Genre)
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (movie == null)
             {
