@@ -10,8 +10,7 @@ namespace MvcMovie.Models
     public class Genre
     {
         public int ID { get; set; }
-        [Required]
-        [MinLength(3)]
+        [RegularExpression(@"^[A-Z]+[a-zA-Z""'\s-]*$"), Required, StringLength(30)]
         public string Name { get; set; }
         public IList<Movie> Movies { get; set; }
     }
