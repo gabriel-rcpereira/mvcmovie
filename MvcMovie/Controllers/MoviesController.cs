@@ -123,10 +123,14 @@ namespace MvcMovie.Controllers
                 return NotFound();
             }
 
+            var genres = _context.Genres.ToList().Select(g => 
+                new SelectListItem(g.Name, g.ID.ToString(), (movie.Genre != null && movie.Genre.ID == g.ID)));
+
             var movieGenreView = new MovieEditViewModel
             {
-                Genres = _context.Genres.ToList().Select(g => new SelectListItem(g.Name, g.ID.ToString())),
-                Movie = movie
+                Genres = genres,
+                Movie = movie,
+                GenreIdSelected = movie.Genre != null ? movie.Genre.ID : int.MinValue
             };
 
             return View(movieGenreView);

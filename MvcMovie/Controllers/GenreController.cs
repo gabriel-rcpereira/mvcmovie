@@ -1,30 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MvcMovie.Data;
-using MvcMovie.Models;
+using Service.ApplicationService.Contract;
+using Service.ApplicationService.Vo;
 
 namespace MvcMovie.Controllers
 {
     public class GenreController : Controller
     {
+        private readonly IGenreService _genreService;
+
         private readonly MvcMovieContext _context;
 
-        public GenreController(MvcMovieContext context)
+        public GenreController(MvcMovieContext context,
+            IGenreService genreService)
         {
             _context = context;
+            _genreService = genreService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            IQueryable<Genre> genres = from g in _context.Genres
-                select g;
-
-            return View(await genres.ToListAsync());
+            return View(_genreService.findAllGenre());
         }
 
         [HttpGet]
@@ -35,70 +33,72 @@ namespace MvcMovie.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([FromForm] Genre genre)
+        public IActionResult Create([FromForm] GenreVo genreVo)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(genre);
-                await _context.SaveChangesAsync();
+                _genreService.Insert(genreVo);
+                _genreService.Save();
+                
                 return RedirectToAction(nameof(Index));
             }
-            return View(genre);
+            return View(genreVo);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Edit(int? id)
+        public IActionResult Edit(int? id)
         {
-            if (id == null || id <= 0)
+            if (!id.HasValue || id <= 0)
                 return NotFound();
 
-            var genre = await _context.Genres.FindAsync(id);
-            if (genre == null)
+            var genreVo = _genreService.FindById(id.Value);
+            if (genreVo == null)
                 return NotFound();
 
-            return View(genre);
+            return View(genreVo);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID", "Name")] Genre genre)
+        public IActionResult Edit(int id, [Bind("Id", "Name")] GenreVo genreVo)
         {
             if (id <= 0)
                 return NotFound();
 
             if (ModelState.IsValid)
             {
-                _context.Update(genre);
-                await _context.SaveChangesAsync();
+                _genreService.Update(genreVo);
+                _genreService.Save();
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(genre);
+            return View(genreVo);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
-            if (id == null || id <= 0)
+            if (!id.HasValue || id <= 0)
             {
                 return NotFound();
             }
 
-            var genre = await _context.Genres.FirstOrDefaultAsync(g => g.ID == id);
-            if (genre == null)
+            var genreVo = _genreService.FindById(id.Value);
+            if (genreVo == null)
             {
                 return NotFound();
             }
 
-            return View(genre);
+            return View(genreVo);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int id)
         {
-            var genre = await _context.Genres.FindAsync(id);
-            _context.Remove(genre);
-            await _context.SaveChangesAsync();
+            var genreVo = _genreService.FindById(id);
+            _genreService.Delete(genreVo);
+            _genreService.Save();
 
             return RedirectToAction(nameof(Index));
         }

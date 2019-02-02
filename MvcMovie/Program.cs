@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Model.DatabaseCore;
 using MvcMovie.Data;
 using MvcMovie.Models;
 
@@ -29,6 +30,10 @@ namespace MvcMovie
                     var context = services.GetRequiredService<MvcMovieContext>();
                     context.Database.Migrate();
                     SeedData.Initialize(services);
+
+                    var databaseContext = services.GetRequiredService<DatabaseContext>();
+                    databaseContext.Database.Migrate();
+                    //SeedData.Initialize(services);
                 }
                 catch (Exception ex)
                 {

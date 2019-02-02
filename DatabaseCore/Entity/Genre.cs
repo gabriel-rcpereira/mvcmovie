@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 
 
-namespace MvcMovie.Models
+namespace Model.DatabaseCore.Entity
 {
     public class Genre
     {

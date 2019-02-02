@@ -11,7 +11,6 @@ namespace MvcMovie.Models
     {
         public Movie Movie { get; set; }
         public IEnumerable<SelectListItem> Genres { get; set; }
-        [Required]
         public int GenreIdSelected { get; set; }
     }
 }

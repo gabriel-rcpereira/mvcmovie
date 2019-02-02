@@ -1,18 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using MvcMovie.Models;
-using System.Globalization;
+using Model.DatabaseCore;
+using Model.DatabaseCore.Entity;
+using Model.DatabaseCore.Repository;
 using MvcMovie.Data;
+using Service.ApplicationService;
+using Service.ApplicationService.AutoMapper;
+using Service.ApplicationService.Contract;
+using System.Globalization;
 
 namespace MvcMovie
 {
@@ -35,10 +36,18 @@ namespace MvcMovie
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddSingleton(CreateConfigurationAutoMapper());
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddDbContext<DatabaseContext>(option =>
+                option.UseSqlServer(Configuration.GetConnectionString("MvcMovieContext")));
 
             services.AddDbContext<MvcMovieContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("MvcMovieContext")));
+
+            services.AddScoped<IGenreService, GenreService>();
+            services.AddScoped<IGenreRepository, GenreRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -73,6 +82,17 @@ namespace MvcMovie
 
             CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
             CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+        }
+
+        private IMapper CreateConfigurationAutoMapper()
+        {
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new AutoMapperProfile());
+            });
+
+            IMapper mapper = mappingConfig.CreateMapper();
+            return mapper;
         }
     }
 }
